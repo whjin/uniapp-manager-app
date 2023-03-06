@@ -409,7 +409,7 @@ export default {
     },
     goToTerminal () {
       this.$parent.countTimer();
-      this.setCurrentTab(32);
+      this.setCurrentTab(2);
     },
     // 视频全屏
     handleFullscreenchange (id, isFullScreen) {
@@ -536,7 +536,7 @@ export default {
             if (this.notForeignerArr.indexOf(item.gj) < 0) {
               // 外籍人员
               peopleCountingConfig.foreigner += 1;
-              item.isForeigner = true;
+              item.isForeigner = true
             } else if (this.minorityArr.indexOf(item.mzValue) < 0) {
               // 少数民族
               item.isMinority = true;

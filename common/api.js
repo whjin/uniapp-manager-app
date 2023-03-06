@@ -17,8 +17,6 @@ export default {
   },
   // 主页|在押人员
   index: {
-    // 获取APP配置菜单
-    getAppModuleConf: "terminal/terAppModuleConf/getAppModuleConf",
     // 获取缓存信息
     getAllSetting: "terminal/terSetting/all",
     // 获取分机信息
@@ -45,16 +43,14 @@ export default {
     getUpdateInfo: "terminal/update/getUpdateInfo",
     // 修改分机信息
     updateTerminal: "terminal/common/updateAppVersion",
-    // 1:1人脸比对，用于点名
-    faceRecognition11: "arc/face/compareCNP",
+    // 获取分机音量
+    getTerminalVolume: "terminal/device/api/findDeviceInfo",
+    // 设置分机音量
+    setDeviceVolume: "terminal/device/api/setDeviceVol",
     // 获取分机设备在线状态
     terminalDeviceStatus: "terminal/device/api/terminalDeviceStatus",
     // 获取在押人员信息
     getOdsPersonById: "terminal/odsPersonInfo/getOdsPersonById",
-    // 新增操作动态信息
-    setDynamicInfo: "terminal/terOperationInfo/save",
-    // 推送主机动态消息
-    sendMsgToControl: "websocket/msgFilterSend",
   },
   // 电子水牌页
   main: {
@@ -158,8 +154,10 @@ export default {
   },
   // 在押人员
   prisoner: {
-    // 1:N人脸识别，用于登录
-    faceRecognition1N: "arc/face/searchSuspectFaceCNP1_N",
+    // 1:N人脸比对
+    faceRecognition1N: "terminal/faceRecognition/prisonerImgOneToMany",
+    // 1:1人脸比对
+    faceRecognition11: "terminal/faceRecognition/prisonerImageOneToOne",
   },
   medication: {
     getRoomInfo: "terminal/terTerminalInfo/getRoomInfo",
@@ -186,6 +184,8 @@ export default {
       },
       method: "get",
     });
+    console.log("request err", err);
+    console.log("request res", res);
     return res;
   },
 

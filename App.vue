@@ -2,34 +2,32 @@
 import Api from "@/common/api.js";
 import Log from "@/common/utils/log.js";
 
-// 基础模块
-const Base = uni.requireNativePlugin("GK-Base");
-// 设备控制
-const Utils = uni.requireNativePlugin("Utils");
-// 外设控制
-// const HarUtils = uni.requireNativePlugin("HarUtils");
-// 升级APP
-const UpdateApp = uni.requireNativePlugin("GK-UpdateApp");
-// 烽火设备控制
-// const SystemModule = uni.requireNativePlugin("peakfire-nexus_SystemModule");
-// 烽火指纹模块
-// const fingerPrintModule = uni.requireNativePlugin("peakfire-nexus_FingerPrintModule");
-// 来邦对讲模块
-const FloatUniModule = uni.requireNativePlugin("FloatUniModule");
+// 指纹控制
+const fingerprint = uni.requireNativePlugin("FingerprintModule");
+// 音频控制
+const harUtils = uni.requireNativePlugin("HarUtils");
+// 语音播报
+const base = uni.requireNativePlugin("GK-Base");
+const sip = uni.requireNativePlugin("Sip");
+// 看门狗
+const crashHandle = uni.requireNativePlugin("CrashHandle");
+const utils = uni.requireNativePlugin("Utils");
+// 读卡器 & 屏幕常亮设置
+const cardManager = uni.requireNativePlugin("card-module");
 
 export default {
   onLaunch: function () {
     // #ifdef APP-PLUS
-    if (process.env.NODE_ENV == "production") {
-      FloatUniModule.openGuard(1);
-    }
-    // 关闭门磁监听
-    // SystemModule.disListen(138);
-    // 设置媒体音量
-    // FloatUniModule.setStreamVolumeTypeMusic(100);
+    // 系统状态栏显隐
+    harUtils.showStatusBar();
+    harUtils.hideStatusBar();
+    // 初始化音频增益
+    harUtils.initAudioGain();
+    harUtils.setVolume(0, uni.getStorageSync("mediaDefaultVolume"));
+    harUtils.setVolume(3, uni.getStorageSync("mediaDefaultVolume"));
     // 应急报警按键事件
-    // HarUtils.removeKeyCallBack();
-    // HarUtils.addKeyCallBack();
+    harUtils.removeKeyCallBack();
+    harUtils.addKeyCallBack();
     // 设置全屏
     plus.navigator.setFullscreen(true);
     // 添加week自定义字体规则
@@ -38,20 +36,51 @@ export default {
       fontFamily: "uniicons",
       src: "url('./static/uni.ttf')",
     });
+    crashHandle.startGather(0); //开启日志，参数无效，默认保存着
+    crashHandle.startGuard(10000); //启动守护，0-不轮询
+    // 登录SIP服务
     if (!!uni.getStorageSync("baseUrl")) {
-      // 开启门磁监听
-      // SystemModule.listen(138);
+      // SIP登录
+      this.initSip();
       // 初始化语音播报
-      Base.speechInit();
+      base.speechInit();
       // 修改分机信息
       this.setTerminalInfo();
     }
+    // 开启屏幕常亮
+    cardManager.keepScreenOn(res => {
+      const r = JSON.parse(res);
+      Log.writeLog(`${r.msg}，code：${r.code}`, false);
+    });
     // #endif
   },
   onError (err) {
     Log.writeLog(`代码错误${err}`, false);
   },
   methods: {
+    // 初始化SIP对讲服务
+    initSip () {
+      if (sip.logout() === 0) {
+        console.log("SIP注销成功");
+      }
+      if (sip.init() === 0) {
+        console.log("SIP初始化成功");
+        if (utils.isSelfStart() === 0) {
+          // 首次自启动
+          sip.startEchoCancellerCalibration();
+        }
+        let sipAccount = uni.getStorageSync("managerInfo").sipAccount;
+        let sipPwd = uni.getStorageSync("sipTalkDevicePwd");
+        let sipUrl = uni.getStorageSync("sipTalkServerUrl");
+        if (sip.login(sipAccount, sipPwd, sipUrl) === 0) {
+          console.log("SIP登录成功");
+        } else {
+          console.log("SIP登录失败");
+        }
+      } else {
+        console.log("SIP初始化失败");
+      }
+    },
     // 修改分机信息
     async setTerminalInfo () {
       let params = {
@@ -68,14 +97,11 @@ export default {
     },
   },
   globalData: {
-    Base,
-    Utils,
-    // HarUtils,
-    UpdateApp,
-    FloatUniModule,
-    // SystemModule,
-    // fingerPrintModule,
     webSocketConnected: false,
+    harUtils: harUtils,
+    Base: base,
+    fingerprint: fingerprint,
+    cardManager
   },
 };
 </script>

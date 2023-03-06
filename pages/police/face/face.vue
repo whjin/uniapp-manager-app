@@ -15,10 +15,6 @@
               <common-icons iconType="iconrecord" size="46" color="#fff" />
               <text>面对面记录</text>
             </div>
-            <div class="face-menu-item" :class="currentPage == 3 ? 'face-menu-active' : ''" @click="switchPage(3)">
-              <common-icons iconType="iconrecord" size="46" color="#fff" />
-              <text>发起点名</text>
-            </div>
           </div>
           <div class="face-vertical-divider"></div>
           <div v-if="currentPage == 1" class="face-register-container">
@@ -66,8 +62,8 @@
                 </div>
                 <div class="face-select">
                   <label>登记时间：</label>
-                  <e-picker mode="date" class="picker-img" @change="selectSearchDate" :placeholder="'请选择登记时间'">
-                    <div class="face-date">{{ searchDate }}</div>
+                  <e-picker mode="date" class="picker-img" @change="selectRegDate" :placeholder="'请选择登记时间'">
+                    <div class="face-date">{{ regDate }}</div>
                   </e-picker>
                 </div>
                 <div class="face-select">
@@ -88,7 +84,7 @@
               <scroll-view scroll-y="true" class="record-table-scroll">
                 <div class="table-content" v-for="(item, index) in faceRecordList" :key="index">
                   <div class="record-table-item" style="flex: 1">
-                    {{ item.roomNo }}
+                    {{ `${item.roomNo}监室` }}
                   </div>
                   <div class="record-table-item" style="flex: 1">
                     {{ item.accountName }}
@@ -172,9 +168,7 @@ export default {
       // 面对面类型列表
       faceTypeList: [],
       // 登记时间
-      regDate: dateFormat("YYYY-MM-DD hh:mm:ss", new Date()),
-      // 查询时间
-      searchDate: dateFormat("YYYY-MM-DD", new Date()),
+      regDate: dateFormat("YYYY-MM-DD", new Date()),
       // 面对面类型
       faceType: "",
       // 情况记录
@@ -232,24 +226,6 @@ export default {
       if (this.currentPage == 2) {
         this.queryFaceRecord();
       }
-      if (this.currentPage == 3) {
-        this.tempRollCallHandler();
-      }
-    },
-    // 发起临时点名
-    async tempRollCallHandler () {
-      let ids = uni.getStorageSync("managerInfo").roomId;
-      let params = {
-        data: {
-          ids,
-          callSpace: 20,
-          duration: 120,
-        }
-      };
-      let res = await Api.apiCall("post", Api.test.tempRollCall, params);
-      if (res.state.code == 200) {
-        this.$parent.handleShowToast("发起点名成功", "center");
-      }
     },
     // 获取民警信息
     async getPoliceInfo () {
@@ -280,10 +256,6 @@ export default {
     },
     // 清空面对面民警
     clearSelectPolice () {
-      this.policeInfo = {
-        code: "",
-        value: ""
-      };
       this.$parent.initCountTimer();
     },
     // 选择面对面类型
@@ -301,11 +273,6 @@ export default {
       this.regDate = e;
       this.$parent.initCountTimer();
     },
-    // 选择查询时间
-    selectSearchDate (e) {
-      this.searchDate = e;
-      this.$parent.initCountTimer();
-    },
     // 情况记录
     faceRemarkChange (e) {
       this.faceRemark = e.target.value;
@@ -313,7 +280,7 @@ export default {
     },
     // 取消登记
     cancelFaceReg () {
-      this.setCurrentTab(32);
+      this.setCurrentTab(2);
     },
     // 保存面对面登记
     async saveFaceRegister () {
@@ -341,7 +308,7 @@ export default {
         data: {
           roomNo: this.roomInfo.roomNo,
           accountName: this.policeInfo.code,
-          registerTime: this.searchDate,
+          registerTime: this.regDate,
           faceType: this.faceType,
         },
         pageParam: {
@@ -351,14 +318,14 @@ export default {
       };
       let res = await Api.apiCall("post", Api.police.face.getFaceRecord, params);
       if (res.state.code == "200") {
-        if (res.data.length) {
+        if (!res.data.length) {
+          this.$parent.handleShowToast("暂无数据", "center");
+        } else {
           this.faceRecordList = res.data;
           this.faceRecordList.map(item => {
             item.accountName = this.policeInfo.value;
-            item.registerTime = dateFormat("YYYY-MM-DD hh:mm:ss", new Date(item.registerTime));
+            item.registerTime = dateFormat("YYYY-MM-DD", new Date(item.registerTime));
           });
-        } else {
-          this.$parent.handleShowToast("暂无数据", "center");
         }
       }
     },

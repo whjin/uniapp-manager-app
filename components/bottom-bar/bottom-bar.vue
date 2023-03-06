@@ -28,6 +28,7 @@
 </template>
 
 <script>
+const base = uni.requireNativePlugin("GK-Base");
 import commonIcons from "@/components/common-icons/common-icons.vue";
 import { mapState } from "vuex";
 
@@ -72,7 +73,7 @@ export default {
     }),
     // 倒计时状态
     showCountTime () {
-      return this.currentTab > 31 && this.currentTab != 33;
+      return this.currentTab > 1 && this.currentTab != 3;
     }
   },
   methods: {
@@ -107,7 +108,7 @@ export default {
     },
     getAppInfo () {
       this.version = plus.runtime.version;
-      this.curIP = getApp().globalData.Base.getIpAddress().ip;
+      this.curIP = base.getIpAddress().ip;
       this.authIP = uni.getStorageSync('authTerminalIP');
     }
   },

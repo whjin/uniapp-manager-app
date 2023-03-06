@@ -16,6 +16,7 @@ function judgeIosPermissionPush() {
 	if (app.currentUserNotificationSettings) {
 		var settings = app.currentUserNotificationSettings();
 		enabledTypes = settings.plusGetAttribute("types");
+		console.log("enabledTypes1:" + enabledTypes);
 		if (enabledTypes == 0) {
 			console.log("推送权限没有开启");
 		} else {
@@ -31,6 +32,7 @@ function judgeIosPermissionPush() {
 			result = true;
 			console.log("已经开启推送功能!")
 		}
+		console.log("enabledTypes2:" + enabledTypes);
 	}
 	plus.ios.deleteObject(app);
 	plus.ios.deleteObject(UIApplication);
@@ -47,6 +49,8 @@ function judgeIosPermissionLocation() {
 	// 以下代码判断了手机设备的定位是否关闭，推荐另行使用方法 checkSystemEnableLocation
 	/* var enable = cllocationManger.locationServicesEnabled();
 	var status = cllocationManger.authorizationStatus();
+	console.log("enable:" + enable);
+	console.log("status:" + status);
 	if (enable && status != 2) {
 		result = true;
 		console.log("手机定位服务已开启且已授予定位权限");
@@ -63,6 +67,7 @@ function judgeIosPermissionRecord() {
 	var avaudiosession = plus.ios.import("AVAudioSession");
 	var avaudio = avaudiosession.sharedInstance();
 	var permissionStatus = avaudio.recordPermission();
+	console.log("permissionStatus:" + permissionStatus);
 	if (permissionStatus == 1684369017 || permissionStatus == 1970168948) {
 		console.log("麦克风权限没有开启");
 	} else {
@@ -78,6 +83,7 @@ function judgeIosPermissionCamera() {
 	var result = false;
 	var AVCaptureDevice = plus.ios.import("AVCaptureDevice");
 	var authStatus = AVCaptureDevice.authorizationStatusForMediaType('vide');
+	console.log("authStatus:" + authStatus);
 	if (authStatus == 3) {
 		result = true;
 		console.log("相机权限已经开启");
@@ -93,6 +99,7 @@ function judgeIosPermissionPhotoLibrary() {
 	var result = false;
 	var PHPhotoLibrary = plus.ios.import("PHPhotoLibrary");
 	var authStatus = PHPhotoLibrary.authorizationStatus();
+	console.log("authStatus:" + authStatus);
 	if (authStatus == 3) {
 		result = true;
 		console.log("相册权限已经开启");
@@ -223,6 +230,7 @@ function gotoAppPermissionSetting() {
 		plus.ios.deleteObject(NSURL2);
 		plus.ios.deleteObject(application2);
 	} else {
+		// console.log(plus.device.vendor);
 		var Intent = plus.android.importClass("android.content.Intent");
 		var Settings = plus.android.importClass("android.provider.Settings");
 		var Uri = plus.android.importClass("android.net.Uri");

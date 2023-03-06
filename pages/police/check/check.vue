@@ -42,7 +42,7 @@
             <view class="upload-img-box">
               <view class="goods" v-for="(item, index) in addImgList" :key="item.uri">
                 <image class="goods-img" :src="item.uri" @click.stop="previewImg(item.uri)"></image>
-                <common-icons iconType="icondelete" size="35" color="#FFFFFF" @click="deleteImg(index)" :iconStyle="{
+                <common-icons iconType="icondelete" size="35" color="#FFFFFF" @click.stop="deleteImg(index)" :iconStyle="{
                                 'position': 'absolute',
                                 'top': '5px',
                                 'right': '5px'}" />
@@ -148,9 +148,7 @@
         </view>
         <view class="primary-content">
           <text class="title">安全隐患及漏洞：</text>
-          <uni-tooltip :content="selectRecord.remarks">
-            <input class="value" v-model="selectRecord.remarks" disabled />
-          </uni-tooltip>
+          <input class="value" v-model="selectRecord.remarks" disabled />
         </view>
       </scroll-view>
     </neil-modal>
@@ -178,7 +176,6 @@ import ePicker from "@/components/e-picker/e-picker.vue";
 import hTimePicker from "@/components/h-timePicker/h-timePicker.vue";
 import commonIcons from "@/components/common-icons/common-icons.vue";
 import { getDate } from '@/lib/tools.js';
-import uniTooltip from "@/components/uni/uni-tooltip/uni-tooltip.vue";
 
 export default {
   components: {
@@ -190,7 +187,6 @@ export default {
     sunuiUpimg,
     ePicker,
     hTimePicker,
-    uniTooltip
   },
   data () {
     return {
@@ -326,7 +322,7 @@ export default {
     }),
     // 检查内容列表
     checkContentList () {
-      let curContentList = (this.checkTypeList && this.checkTypeList.find(item => item.code === this.saveCheckParams.inspectionType)) || null;
+      let curContentList = this.checkTypeList.find(item => item.code === this.saveCheckParams.inspectionType);
       if (curContentList) {
         return curContentList.content;
       } else {
@@ -422,11 +418,11 @@ export default {
            *   "tempFiles":[{"path":"_doc/uniapp_temp_1358557275080/camera/1358557348016.jpg","size":472526}]
            * } 
            */
-          self.$parent.initSpecialTimeout();
+          this.$parent.initSpecialTimeout();
           self.addImgList.push({
-            uri: (res.tempFilePaths && res.tempFilePaths[0]) || ''
+            uri: res.tempFilePaths[0]
           });
-          self.$parent.openCrashHandle();
+          this.$parent.openCrashHandle();
         }
       });
     },

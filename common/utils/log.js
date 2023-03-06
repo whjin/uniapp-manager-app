@@ -126,27 +126,28 @@ function writeLog(params, encryption) {
  * @param {*} fileDate 需要上传的log文件日期 xxxx-xx-xx
  */
 function uploadLogFile(fileDate) {
-  const baseUrl = uni.getStorageSync("baseUrl");
+  const baseUrl = uni.getStorageSync('baseUrl');
   const terCode = uni.getStorageSync("managerInfo").code;
   uni.uploadFile({
-    url: baseUrl + "terminal/testing/uploadTer", // 后端api接口
+    url: baseUrl + 'terminal/testing/uploadTer',     // 后端api接口
     filePath: `file:///storage/emulated/0/Android/data/com.gksc.manager/documents/app-log/${fileDate}log.text`, // log文件路径
-    name: "files", // 后端通过'files'获取上传的文件对象
+    name: 'files',     // 后端通过'files'获取上传的文件对象
     formData: {
-      fileType: "LOG_FILE",
-      terCode,
+      fileType: 'LOG_FILE',
+      terCode
     },
     header: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'multipart/form-data'
     },
-    success: (res) => {
+    success:(res) => {
       if (res.data.state.code == 200) {
+        console.log(res.data.state.msg);
       }
-    },
+    }
   });
 }
 
 export default {
   writeLog,
-  uploadLogFile,
+  uploadLogFile
 };

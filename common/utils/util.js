@@ -9,16 +9,16 @@ export const clear = (str) => {
 };
 
 export const isEmpty = (obj) => {
-  if (obj == null) return true;
-  if (obj.length > 0) return false;
-  if (obj.length === 0) return true;
-  if (typeof obj !== "object") return true;
-  for (var key in obj) {
-    if (hasOwnProperty.call(obj, key)) return false;
-  }
+    if (obj == null) return true;
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+    if (typeof obj !== "object") return true;
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
 
-  return true;
-};
+    return true;
+}
 
 /**
  * @description 判断字符串是否为空或者全部都是空格
@@ -46,9 +46,9 @@ export const hasKey = (obj, key) => {
 };
 
 // 补全日期位数
-export const showNum = (num) => {
+export const showNum=(num)=>{
   return num < 10 ? "0" + num : num;
-};
+}
 
 // 格式化日期类型,fmt格式可选择
 export const dateFormat = (fmt, date) => {
@@ -65,10 +65,7 @@ export const dateFormat = (fmt, date) => {
   for (let k in opt) {
     ret = new RegExp("(" + k + ")").exec(fmt);
     if (ret) {
-      fmt = fmt.replace(
-        ret[1],
-        ret[1].length == 1 ? opt[k] : opt[k].padStart(ret[1].length, "0")
-      );
+      fmt = fmt.replace(ret[1], ret[1].length == 1 ? opt[k] : opt[k].padStart(ret[1].length, "0"));
     }
   }
   return fmt;
@@ -123,13 +120,14 @@ export const str2Array = (str) => {
  * @param {Function} func 需要处理的函数
  * @param {Number} wait 执行间隔(毫秒)
  * @param {Boolean} immediate 是否立即执行一次
- * @returns
+ * @returns 
  */
 export const debounce = (func, wait = 1000, immediate = true) => {
   let timer;
-  return function () {
+  return function() {
     let context = this,
-      args = arguments;
+        args = arguments;
+         
     if (timer) clearTimeout(timer);
     if (immediate) {
       let callNow = !timer;
@@ -138,29 +136,29 @@ export const debounce = (func, wait = 1000, immediate = true) => {
       }, wait);
       if (callNow) func.apply(context, args);
     } else {
-      timer = setTimeout(() => {
+      timer  = setTimeout(() => {
         func.apply(context, args);
-      }, wait);
+      }, wait)
     }
-  };
-};
+  }
+}
 
 /**
  * 函数节流
  * @param {Function} fn 需要被处理的函数
  * @param {Number} wait 执行间隔（毫秒）
- * @returns
+ * @returns 
  */
 export const throttle = (fn, wait = 1000) => {
   let timer = null;
-  return function () {
+  return function() {
     let context = this;
     let args = arguments;
     if (!timer) {
       timer = setTimeout(() => {
         fn.apply(context, args);
         timer = null;
-      }, wait);
+      }, wait)
     }
-  };
-};
+  }
+}

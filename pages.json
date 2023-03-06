@@ -16,15 +16,15 @@
               }
             },
             {
-              "id": "aioRemoteVideo",
-              "path": "pages/home/index/subnvue/aioRemoteVideo",
+              "id": "sipPreview",
+              "path": "pages/home/index/subnvue/sipPreview",
               "style": {
                 "background": "transparent"
               }
             },
             {
-              "id": "aioPreviewVideo",
-              "path": "pages/home/index/subnvue/aioPreviewVideo",
+              "id": "sipRemote",
+              "path": "pages/home/index/subnvue/sipRemote",
               "style": {
                 "background": "transparent"
               }
@@ -46,7 +46,7 @@
   "globalStyle": {
     "navigationStyle": "custom",
     "pageOrientation": "landscape",
-    "rpxCalcBaseDeviceWidth": 1440
+    "rpxCalcBaseDeviceWidth": 1040
   },
   "condition": {
     "current": 0,

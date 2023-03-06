@@ -75,6 +75,7 @@ export default {
       let res = await Api.apiCall('get', Api.police.conditionReport.getViolation, {
         fieldName: val
       }, true);
+      console.log('getViolation', JSON.stringify(res));
       if (res.state.code === 200) {
         this.resultList = res.data;
       }

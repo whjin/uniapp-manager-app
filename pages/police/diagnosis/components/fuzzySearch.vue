@@ -106,6 +106,7 @@ export default {
       }
       params.data[this.params] = val;
       let res = await Api.apiCall('post', this.api, params, true);
+      console.log('getDrugInfo', val, res);
       if (res.state.code === 200) {
         this.resultList = res.data;
       }

@@ -21,7 +21,7 @@
               <view class="fields">
                 <text class="text">出生年月：</text>
               </view>
-              <view class="inside-border input">{{ selectedPrisoner.birthday | dateFormatFilter }}</view>
+              <view class="inside-border input">{{ selectedPrisoner && selectedPrisoner.birthday || '无' }}</view>
             </view>
           </view>
           <!-- 基本信息 -->
@@ -1103,6 +1103,7 @@ export default {
           id: this.curTemplate
         }
       }, true);
+      console.log('getTemplateDetails', res);
       if (res.state.code == 200) {
         let list = res.data;
         this.recipeParams = list.filter(record => {

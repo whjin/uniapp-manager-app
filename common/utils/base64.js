@@ -189,6 +189,7 @@ const btou = (b) => b.replace(re_btou, cb_btou);
  * polyfill version of `atob`
  */
 const atobPolyfill = (asc) => {
+    // console.log('polyfilled');
     asc = asc.replace(/\s+/g, '');
     if (!b64re.test(asc))
         throw new TypeError('malformed base64.');

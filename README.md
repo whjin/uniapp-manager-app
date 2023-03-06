@@ -1,3 +1,3 @@
-# uniapp-manager-app
+# Manager
 
-uniapp manager app
+仓外屏分机【白云】

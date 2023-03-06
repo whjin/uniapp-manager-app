@@ -271,6 +271,7 @@ export default {
     }),
     async getCheckInfo (managerInfo) {
       let res = await Api.apiCall("get", Api.mutual.getRoomInfo + "/" + managerInfo.roomId, null, true);
+      console.log(res);
       if (res.state.code == 200) {
         this.roomInfo = res.data;
         this.getPrisonerNum();
@@ -316,6 +317,8 @@ export default {
           this.prisonerInfoPageLoadFlag = true;
         }
         this.prisonerInfoList = this.prisonerInfoList.concat(res.data);
+        console.log(this.prisonerInfoList.length);
+        console.log(this.prisonerInfoPageIndex);
       }
     },
     outPrisonerLoadLower: function (e) {
@@ -373,6 +376,7 @@ export default {
             };
             let res = await Api.apiCall("post", Api.access.saveAccess, params);
             if (res.state.code == 200) {
+              console.log("提交：" + JSON.stringify(res));
               // this.prisonerInfoList.splice(this.outIndex,1);
               this.reloadPrisonerInfo();
               this.getPrisonerNum();
@@ -397,6 +401,7 @@ export default {
         };
         let res = await Api.apiCall("post", Api.access.saveAccess, params);
         if (res.state.code == 200) {
+          console.log("提交：" + JSON.stringify(res));
           // this.outPrisonerInfoList.splice(this.outIndex,1);
           this.reloadOutPrisonerInfo();
           this.getPrisonerNum();

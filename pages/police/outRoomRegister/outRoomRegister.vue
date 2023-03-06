@@ -101,6 +101,7 @@
         </scroll-view>
       </view>
     </view>
+    <recognition-dialogs ref="recognitionDialogs" useFor="outroom" :regConfig="regConfig" :isShow="showRecognitionDialogs" @faceRecognitionSuccess="faceRecognitionSuccess" @fingerRecognitionSuccess="fingerRecognitionSuccess" @close="recognitionDialogsClose"></recognition-dialogs>
     <neil-modal :show="isShowComfirmDialog" :autoClose="true" @close="closeComfirmDialog">
       <view class="modal-header">
         <view class="modal-title">{{ curPage === 1 ? '外出' : '返回' }}监室</view>
@@ -154,11 +155,9 @@
 
 <script>
 import Api from '@/common/api.js';
-
 import { mapState } from "vuex";
 import ePicker from "@/components/e-picker/e-picker.vue";
 import xflSelect from "@/components/xfl-select/xfl-select.vue";
-
 import { dateFormat } from "@/common/utils/util.js";
 
 export default {
@@ -169,12 +168,16 @@ export default {
   },
   data () {
     return {
+      // 认证弹框
+      showRecognitionDialogs: false,
+      regConfig: {
+        regName: '',
+        rybh: ''
+      },
       // 页面标题
       title: '进出监室登记',
-
       // 当前页面
       curPage: 1,
-
       // 页面tab配置
       tabConfig: [
         {
@@ -193,7 +196,6 @@ export default {
           key: 'record'
         },
       ],
-
       // 查询参数配置
       searchParamConfig: [
         {
@@ -222,19 +224,15 @@ export default {
           list: 'policeList'
         }
       ],
-
       // 外出原因/负责民警 可选列表
       searchParamList: {
         // 外出类型
         outTypeList: [],
-
         // 管教民警
         policeList: [],
       },
-
       // 在押人员列表
       prisonerList: [],
-
       // 记录列表头部标题
       recordListTitleConfig: [
         {
@@ -270,22 +268,16 @@ export default {
           code: 'takeBackPolice'
         }
       ],
-
       // 记录列表
       recordList: [],
-
       // 记录列表总数
       recordTotal: 0,
-
       // 监室号
       roomNo: uni.getStorageSync("managerInfo").roomNo,
-
       // 监室ID
       roomId: uni.getStorageSync('managerInfo').roomId,
-
       // 监室名称
       roomName: uni.getStorageSync("managerInfo").roomName,
-
       // 查询参数
       searchParams: {
         data: {
@@ -301,16 +293,12 @@ export default {
           pageSize: 10
         }
       },
-
       // 弹框
       isShowComfirmDialog: false,
-
       // 带出 带回 被选中的人员
       selectedPrisoner: {},
-
       // 带出接口参数 外出原因
       takeOutType: '',
-
       // 请求中
       loading: false
     };
@@ -320,31 +308,26 @@ export default {
       // 登录人员信息
       personInfo: (state) => state.app.personInfo
     }),
-
     // 带回 or 带出
     isBringOut () {
       return this.curPage === 1;
     },
-
     // 监室人员列表
     inPrisonerList () {
       let inList = this.prisonerList.filter(item => item.status === '0');
       return inList || [];
     },
-
     // 外出人员列表
     outPrisonerList () {
       let outList = this.prisonerList.filter(item => item.status === '1');
       return outList || [];
     },
-
     // 页面显示的人员列表
     displayedPersonList () {
       let personList = this.curPage === 1 ? this.inPrisonerList : this.outPrisonerList;
       return personList;
     }
   },
-
   filters: {
     dateFormatFilter (value, code, index) {
       if (!value && code !== 'index') return '无';
@@ -357,6 +340,11 @@ export default {
       }
     }
   },
+  created () {
+    this.getPrisonerList();
+    this.getOutTypeList();
+    this.getRoomPolices();
+  },
   destroyed () {
     this.isShowComfirmDialog = false;
   },
@@ -365,7 +353,6 @@ export default {
     handlePageClick () {
       this.$parent.initCountTimer();
     },
-
     // 切换页面
     switchPage (curPage) {
       this.curPage = curPage;
@@ -374,42 +361,30 @@ export default {
         this.searchRecord();
       }
     },
-
     // 输入在押人员
     handlePrisonerNameInput (event) {
       this.searchParams.data.name = event.detail.value;
     },
-
     // 外出时间选择
     pickeOutTime (outTime) {
       this.searchParams.data.outTime = outTime;
     },
-
     // 返回时间选择
     pickeBackTime (backTime) {
       this.searchParams.data.backTime = backTime;
     },
-
     // 外出原因 下拉选择
     selectOutType (outType) {
       this.searchParams.data.outType = outType.orignItem.code;
     },
-
     // 负责民警 下拉选择
     selectDutyPolice (dutyPolice) {
       this.searchParams.data.dutyPolice = dutyPolice.orignItem.accountName;
     },
-
     // 带出弹框 外出原因 下拉选择
     selectConfirmOutType (outType) {
       this.takeOutType = outType.orignItem.code;
     },
-
-    // 显示弹框
-    showComfirmDialog () {
-      this.isShowComfirmDialog = true;
-    },
-
     // 关闭弹框
     closeComfirmDialog () {
       this.takeOutType = '';
@@ -417,13 +392,49 @@ export default {
       this.$refs.selectOutTypeInput && this.$refs.selectOutTypeInput.setInput('请选择外出原因');
       this.isShowComfirmDialog = false;
     },
-
     // 点击带回/带出按钮
-    handleOperate (selected) {
-      this.selectedPrisoner = selected;
-      this.showComfirmDialog();
+    handleOperate (item) {
+      this.selectedPrisoner = item;
+      const { name, rybh } = item;
+      this.regConfig = {
+        rybh,
+        regName: name,
+      };
+      this.showRecognitionDialogs = true;
+      this.$nextTick(() => {
+        this.$refs.recognitionDialogs &&
+          this.$refs.recognitionDialogs.startRecognition();
+      });
     },
-
+    // 人脸认证成功回调
+    faceRecognitionSuccess () {
+      this.verifySuccess();
+    },
+    // 指纹认证成功回调
+    fingerRecognitionSuccess (res) {
+      const { mKey } = this.selectedPrisoner;
+      if (res.mKey == mKey) {
+        this.verifySuccess();
+      } else {
+        this.voiceBroadcast("验证不通过，请确认在押人员信息");
+      }
+    },
+    // 验证成功
+    verifySuccess () {
+      this.voiceBroadcast("验证通过");
+      setTimeout(() => {
+        this.recognitionDialogsClose();
+        this.isShowComfirmDialog = true;
+      }, 2000);
+    },
+    // 关闭认证弹框
+    recognitionDialogsClose () {
+      this.showRecognitionDialogs = false;
+      this.regConfig = {
+        rybh: "",
+        regName: "",
+      };
+    },
     // 带出/带回提交
     submit () {
       this.loading = true;
@@ -435,7 +446,6 @@ export default {
       }
       this.handleTakePrisoner();
     },
-
     // 前端渲染
     changePrisonerStatus () {
       this.prisonerList.map(item => {
@@ -447,7 +457,6 @@ export default {
       });
       this.$parent.handleShowToast("操作成功！", "center");
     },
-
     // 获取监室人员列表
     async getPrisonerList () {
       let params = {
@@ -458,7 +467,6 @@ export default {
         this.prisonerList = res.data;
       }
     },
-
     // 带出 / 带回
     async handleTakePrisoner () {
       let params = {};
@@ -491,7 +499,6 @@ export default {
         this.loading = false;
       }, 5000);
     },
-
     // 获取外出类型
     async getOutTypeList () {
       let res = await Api.apiCall('get', Api.police.outRoomRegister.getOutTypeList, null, true);
@@ -499,28 +506,10 @@ export default {
         this.searchParamList.outTypeList = res.data.data;
       }
     },
-
     // 获取管教民警
     async getRoomPolices () {
       let res = await Api.apiCall('get', Api.main.getRoomPolices + this.roomId, null, true);
       if (res.state.code === 200) {
-        /**
-         * {"data":{
-         *  "roomSupervisor":{
-         *    "name":"曾兆明",
-         *    "id":"2"
-         *  },
-         * "coordinatingPolice":[
-         *    {
-         *      "name":"欧阳韵雄",
-         *      "id":"4"
-         *    },
-         *    {
-         *      "name":"买买提依明.哈斯木",
-         *      "id":"5"
-         *    }]
-         * },"id":0,"state":{"code":200,"msg":"操作成功"}}
-         */
         let list = [];
         let data = res.data;
         // 主管民警
@@ -540,7 +529,6 @@ export default {
         }) || [];
       }
     },
-
     // 查询记录
     async searchRecord () {
       this.loading = true;
@@ -556,34 +544,12 @@ export default {
       setTimeout(() => {
         this.loading = false;
       }, 5000);
-      /**
-       * {"data":[{
-       *   "name":"鲜然",
-       *   "rybh":"222",
-       *   "userName":"admin",
-       *   "dabh":"007",
-       *   "outType":"家属会见",
-       *   "outTime":1576935416000,
-       *   "backTime":1576935425000}],
-       *  "id":0,
-       *  "page":{
-       *   "lastPage":1,
-       *   "nextPage":-1,
-       *   "pageCount":1,
-       *   "pageIndex":1,
-       *   "pageSize":10,
-       *   "start":0,
-       *   "total":4,
-       *   "totalPage":1},"state":{"code":200,"msg":"操作成功"}}
-       */
     },
-
     // 点击查询按钮
     handleSearchRecord () {
       this.searchParams.page.pageIndex = 1;
       this.searchRecord();
     },
-
     // 滑动加载
     handleSearchDataToLower () {
       if (this.recordList.length >= this.recordTotal) {
@@ -592,7 +558,6 @@ export default {
       this.searchParams.page.pageIndex += 1;
       this.searchRecord();
     },
-
     // 重置查询参数
     resetSearchParams () {
       this.searchParams = {
@@ -610,16 +575,18 @@ export default {
         }
       };
     },
-    init () {
-      this.getPrisonerList();
-      this.getOutTypeList();
-      this.getRoomPolices();
-    }
-  },
-
-
-  created () {
-    this.init();
+    // 语音播放
+    voiceBroadcast (voiceText) {
+      let options = {
+        content: voiceText,
+      };
+      let res = getApp().globalData.Base.speech(options);
+      if (res.code == 0) {
+        // console.log("播报成功");
+      } else {
+        console.log("播报失败");
+      }
+    },
   },
 }
 </script>
@@ -638,7 +605,6 @@ export default {
       height: 100%;
     }
   }
-
   // 内边光
   .inner-glow-box {
     background: rgba(42, 66, 115, 0.65);
@@ -647,7 +613,6 @@ export default {
     box-shadow: inset 0upx 0upx 5upx 5upx rgba(25, 106, 190, 0.5);
     border-radius: 2px;
   }
-
   // 滑动文本
   .text-scroll-warrper {
     width: 100%;
@@ -660,7 +625,6 @@ export default {
       white-space: nowrap;
     }
   }
-
   // 操作按钮
   .operate-btn {
     width: 128upx;
@@ -680,7 +644,6 @@ export default {
       pointer-events: none;
     }
   }
-
   // input/下拉框
   .param-item {
     margin-bottom: 15.3upx;
@@ -729,21 +692,17 @@ export default {
       }
     }
   }
-
   .page-menu-area {
     box-sizing: border-box;
     border-right: 1px solid #00c6ff;
   }
-
   .out-room-record {
     padding: 0 32upx;
-
     .search-param-toolbar {
       height: 156.25upx;
       display: flex;
       justify-content: flex-start;
       align-items: flex-start;
-
       .param-list {
         flex: 1;
         display: flex;
@@ -751,7 +710,6 @@ export default {
         align-items: flex-start;
         flex-wrap: wrap;
       }
-
       .search-btn-box {
         height: 100%;
         display: flex;
@@ -775,10 +733,8 @@ export default {
       }
     }
   }
-
   .person-list-warrper {
     padding: 0 32upx;
-
     .overall-situation {
       padding-bottom: 12upx;
       justify-content: space-between;
@@ -786,7 +742,6 @@ export default {
       box-sizing: border-box;
       border-bottom: 1px solid rgba(255, 255, 255, 0.16);
       font-size: 20.83upx;
-
       .room-person-info {
         width: 50%;
         justify-content: space-between;
@@ -794,14 +749,12 @@ export default {
         font-size: 20.83upx;
       }
     }
-
     .person-list {
       height: 434upx;
       display: flex;
       justify-content: flex-start;
       align-items: flex-start;
       flex-wrap: wrap;
-
       .person-list-item {
         margin: 31.25upx 23.5upx 0;
         padding: 5upx 10upx 10upx;
@@ -812,7 +765,6 @@ export default {
         width: 171upx;
         height: 236upx;
         color: #fff;
-
         .person-info {
           width: 100%;
           display: flex;
@@ -825,7 +777,6 @@ export default {
       }
     }
   }
-
   .modal-header {
     padding: 0 27.77upx;
     height: 61.11upx;
@@ -852,7 +803,6 @@ export default {
       }
     }
   }
-
   .comfirm-dialog-content {
     padding-bottom: 67upx;
     width: 720upx;
@@ -861,16 +811,13 @@ export default {
     align-items: center;
     flex-direction: column;
     box-sizing: border-box;
-
     .out-type-select {
       margin-bottom: 28upx;
     }
-
     .selected-prisoner-img-box {
       padding: 5upx 10.5upx;
       box-sizing: border-box;
     }
-
     .selected-prisoner-info {
       margin: 17.5upx 0 45upx;
     }

@@ -98,6 +98,7 @@ export default {
           _self.emit();
         })
         .catch((res) => {
+          console.log(res);
           uni.hideLoading();
         });
     },
@@ -230,6 +231,7 @@ const upload = (options) => {
       }
     },
     fail: function (res) {
+      console.log(res);
       if (fail) {
         fail(res);
       }

@@ -1,10 +1,9 @@
 export default {
-  // pro
-  baseUrl: "http://192.168.20.201:8100/",
   // dev
-  // baseUrl: "http://192.168.1.17:8100/",
-
-  terminalIP: "192.168.20.104",
+  baseUrl: "http://192.168.1.214:8100/",
+  // test
+  // baseUrl: "http://192.168.1.90:8100/",
+  terminalIP: "192.168.1.219",
 
   /*
    * websocket自动重连时间（毫秒）

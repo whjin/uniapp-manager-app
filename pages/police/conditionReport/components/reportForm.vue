@@ -184,11 +184,7 @@ export default {
     // 点击确认登记按钮
     handleReport () {
       if (!this.reportParams.rybhs || !this.reportParams.violateType) {
-        return uni.showToast({
-          title: '违规上报失败，请填写完整表格！',
-          position: 'center',
-          icon: "none",
-        });
+        return this.$parent.handleShowToast("违规上报失败，请填写完整表格！", "center");
       }
       this.saveViolation();
     },
@@ -199,11 +195,7 @@ export default {
       });
       let res = await Api.apiCall('post', Api.police.conditionReport.saveViolation, params, true);
       if (res.state.code === 200) {
-        uni.showToast({
-          title: res.data || '违规上报成功！',
-          position: 'center',
-          icon: "none",
-        });
+        this.$parent.handleShowToast(res.data || '违规上报成功！', "center");
       }
     },
   },

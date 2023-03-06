@@ -41,7 +41,7 @@
               在押人员基本信息：<text>{{ prisonerInfo.xm }}</text>
             </div>
           </div>
-          <div class="page-horizontal-divider"></div>
+          <div class="modal-horizontal-divider"></div>
           <div class="prisonerInfo-modal-content">
             <div class="prisonerInfo-detail-box">
               <div class="detail-image">
